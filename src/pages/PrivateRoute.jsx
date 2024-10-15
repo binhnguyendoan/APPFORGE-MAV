@@ -31,7 +31,7 @@ const PrivateRoute = ({ children }) => {
 
                 const result = await response.json();
 
-                // Nếu có lỗi xác thực, xóa token và chuyển hướng về trang đăng nhập
+               
                 if (result.errors) {
                     localStorage.removeItem('access_token');
                     navigate('/');
