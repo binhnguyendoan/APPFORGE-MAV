@@ -31,19 +31,17 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
 
             if (result.data) {
                 const updatedSpending = type === 'expense' ? result.data.updateExpense : result.data.updateIncome;
+                console.log(updatedSpending);
+
                 const oldAmount = spending.amount;
                 const newAmount = amount;
                 const balanceDifference = type === 'expense'
                     ? oldAmount - newAmount
                     : newAmount - oldAmount;
-
+                console.log(balanceDifference);
 
                 const currentWallet = wallets.find(wallet => wallet.id === walletId);
-
-
                 const newBalance = currentWallet.balance + balanceDifference;
-
-
                 const balanceMutation = `
                     mutation {
                         updateWallet(id: "${walletId}", balance: ${newBalance}, currency: "USD") {
@@ -82,15 +80,13 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
         setShowMessage(true);
         setTimeout(() => {
             setShowMessage(false);
+            window.location.reload();
             onClose();
         }, 3000);
     };
 
 
-    const handleToggleType = () => {
-        const newType = type === 'income' ? 'expense' : 'income';
-        setType(newType);
-    };
+
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
@@ -170,15 +166,7 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
                     </select>
                 </div>
 
-                <div className="mb-4">
-                    <button
-                        onClick={handleToggleType}
-                        className={`w-full py-2 px-4 rounded text-white 
-                         ${type === 'income' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-                    >
-                        Switch to {type === 'income' ? 'Expense' : 'Income'}
-                    </button>
-                </div>
+
 
             </div>
         </div>

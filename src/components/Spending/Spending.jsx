@@ -7,15 +7,10 @@ const Spending = ({ spendingData, onDelete, onUpdate, wallets, categories }) => 
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedSpending, setSelectedSpending] = useState(null);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-    const [walletBalance, setWalletBalance] = useState(0);
 
     const handleEdit = (spending) => {
         setSelectedSpending(spending);
         setModalOpen(true);
-    };
-
-    const updateWalletBalance = (amount, type) => {
-        setWalletBalance(prevBalance => type === 'expense' ? prevBalance + amount : prevBalance - amount);
     };
 
     const handleCloseModal = () => {
@@ -25,13 +20,14 @@ const Spending = ({ spendingData, onDelete, onUpdate, wallets, categories }) => 
 
     const handleDeleteClick = (spending) => {
         setSelectedSpending(spending);
-        setShowConfirmDelete(true); 
+        setShowConfirmDelete(true);
     };
 
     const confirmDelete = async () => {
         if (!selectedSpending) return;
         const { id, type, amount, wallet } = selectedSpending;
         const walletId = wallet.id;
+
         const mutationDelete = type === 'expense'
             ? `mutation { deleteExpense(id: ${id}) { message } }`
             : `mutation { deleteIncome(id: ${id}) { message } }`;
@@ -53,14 +49,14 @@ const Spending = ({ spendingData, onDelete, onUpdate, wallets, categories }) => 
                 const currentBalance = currentWallet ? currentWallet.balance : 0;
                 const newBalance = type === 'expense' ? currentBalance + amount : currentBalance - amount;
 
-                const mutationUpdateWallet = `
-                    mutation {
-                        updateWallet(id: ${walletId}, balance: ${newBalance}, currency: "USD") {
-                            id
-                            balance
-                            currency
-                        }
-                    }
+                const mutationUpdateWallet = `  
+                    mutation {  
+                        updateWallet(id: ${walletId}, balance: ${newBalance}, currency: "USD") {  
+                            id  
+                            balance  
+                            currency  
+                        }  
+                    }  
                 `;
 
                 const responseUpdate = await fetch('https://appforge.mavsolutions.vn/graphql', {
@@ -75,7 +71,6 @@ const Spending = ({ spendingData, onDelete, onUpdate, wallets, categories }) => 
                 const resultUpdate = await responseUpdate.json();
 
                 if (resultUpdate.data) {
-                    updateWalletBalance(amount, type);
                     onDelete(id, type);
                 } else {
                     console.error('Error updating wallet:', resultUpdate.errors);
@@ -107,7 +102,7 @@ const Spending = ({ spendingData, onDelete, onUpdate, wallets, categories }) => 
                             </div>
                             <div className="flex items-center">
                                 <p className={spending.type === 'income' ? 'text-green-500' : 'text-red-500'}>
-                                    {spending.type === 'income' ? `+ $${spending.amount}` : `- $${spending.amount}`}
+                                    {spending.type === 'income' ? `+ $${Math.abs(spending.amount)}` : `- $${Math.abs(spending.amount)}`}
                                 </p>
                                 <FontAwesomeIcon
                                     icon={faEdit}

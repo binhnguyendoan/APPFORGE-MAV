@@ -13,12 +13,9 @@ const Mycalendar = () => {
     const [spendingData, setSpendingData] = useState([]);
     const [totalIncome, setTotalIncome] = useState(0);
     const [totalExpense, setTotalExpense] = useState(0);
-    const [month, setMonth] = useState(10);
-    const [year, setYear] = useState(2024);
+    const [year, setYear] = useState(moment().year());
     const [wallets, setWallets] = useState([]);
     const [categories, setCategories] = useState([]);
-
-
 
     const updateWalletBalance = async (walletId, amount, type) => {
         const wallet = wallets.find(w => w.id === walletId);
@@ -56,54 +53,68 @@ const Mycalendar = () => {
     };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const transactionsResponse = await fetch('https://appforge.mavsolutions.vn/graphql', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                    body: JSON.stringify({
-                        query: `
-                            query {
-                                showDataTransactions(month: ${month}, year: ${year}) {
-                                    date
-                                    incomes { id amount wallet { id name } category { id name } date description }
-                                    expenses { id amount wallet { id name } category { id name } date description }
+        const fetchDataForAllMonths = async () => {
+            const allMonthsData = {};
+            let incomeSum = 0;
+            let expenseSum = 0;
+
+            for (let m = 1; m <= 12; m++) {
+                try {
+                    const response = await fetch('https://appforge.mavsolutions.vn/graphql', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            "Authorization": `Bearer ${localStorage.getItem('access_token')}`,
+                        },
+                        body: JSON.stringify({
+                            query: `
+                                query {
+                                    showDataTransactions(month: ${m}, year: ${year}) {
+                                        date
+                                        incomes { id amount wallet { id name } category { id name } date description }
+                                        expenses { id amount wallet { id name } category { id name } date description }
+                                    }
                                 }
-                            }
-                        `,
-                    }),
-                });
+                            `,
+                        }),
+                    });
 
-                const transactionsResult = await transactionsResponse.json();
-                const transactionsData = transactionsResult.data.showDataTransactions;
+                    const result = await response.json();
+                    const transactionsData = result.data.showDataTransactions;
 
-                let incomeSum = 0;
-                let expenseSum = 0;
-                const newNotes = {};
+                    if (transactionsData && transactionsData.length > 0) {
+                        transactionsData.forEach(transaction => {
+                            const dateKey = moment(transaction.date).format('YYYY-MM-DD');
+                            const totalIncome = transaction.incomes.reduce((sum, income) => sum + income.amount, 0);
+                            const totalExpense = transaction.expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
-                transactionsData.forEach((transaction) => {
-                    const dateKey = moment(transaction.date).format('YYYY-MM-DD');
-                    const totalIncome = transaction.incomes.reduce((sum, income) => sum + income.amount, 0);
-                    const totalExpense = transaction.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                            allMonthsData[dateKey] = {
+                                incomes: transaction.incomes,
+                                expenses: transaction.expenses,
+                                totalIncome,
+                                totalExpense,
+                            };
 
-                    newNotes[dateKey] = {
-                        incomes: transaction.incomes,
-                        expenses: transaction.expenses,
-                        totalIncome,
-                        totalExpense,
-                    };
+                            incomeSum += totalIncome;
+                            expenseSum += totalExpense;
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error fetching data for month ${m}:`, error);
+                }
+            }
 
-                    incomeSum += totalIncome;
-                    expenseSum += totalExpense;
-                });
+            setNotes(allMonthsData);
+            setTotalIncome(incomeSum);
+            setTotalExpense(expenseSum);
+        };
 
-                setNotes(newNotes);
-                setTotalIncome(incomeSum);
-                setTotalExpense(expenseSum);
+        fetchDataForAllMonths();
+    }, [year]);
 
+    useEffect(() => {
+        const fetchWalletsAndCategories = async () => {
+            try {
                 const [walletsResponse, categoriesResponse] = await Promise.all([
                     fetch('https://appforge.mavsolutions.vn/graphql', {
                         method: 'POST',
@@ -130,12 +141,12 @@ const Mycalendar = () => {
                 setCategories(categoriesResult.data.categories);
 
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching wallets and categories:', error);
             }
         };
 
-        fetchData();
-    }, [month, year]);
+        fetchWalletsAndCategories();
+    }, []);
 
     useEffect(() => {
         if (selectedDate) {
@@ -215,7 +226,6 @@ const Mycalendar = () => {
         }
     };
 
-
     const handleAddSpending = async (newSpending) => {
         if (newSpending.type === 'income' || newSpending.type === 'expense') {
             await updateWalletBalance(newSpending.wallet.id, newSpending.amount, newSpending.type);
@@ -248,7 +258,6 @@ const Mycalendar = () => {
             <MonthlySummary
                 totalIncome={totalIncome}
                 totalExpense={totalExpense}
-                month={month}
                 year={year}
             />
             <Spending

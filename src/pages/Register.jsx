@@ -63,7 +63,7 @@ const Register = () => {
             setShowMessage(true);
             setTimeout(() => {
                 setShowMessage(false);
-                navigate('/signin');
+                navigate('/');
             }, 5000);
 
 
