@@ -10,6 +10,8 @@ const Login = () => {
     useEffect(() => {
         if (localStorage.getItem('access_token')) {
             navigate('/dashboard');
+        } else {
+            navigate('/');
         }
     }, [navigate]);
 
