@@ -10,6 +10,23 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
     const [message, setMessage] = useState('');
     const [showMessage, setShowMessage] = useState(false);
     const [isError, setIsError] = useState(false);
+
+
+    const handleAmountChange = (e) => {
+        const value = e.target.value;
+
+        if (!isNaN(value) && parseFloat(value) >= 0) {
+            setAmount(value);
+        } else {
+            setMessage('Please enter a positive number.');
+            setIsError(true);
+            setShowMessage(true);
+            setTimeout(() => {
+                setShowMessage(false);
+            }, 2000);
+        }
+    };
+
     const handleUpdate = async () => {
 
         const mutation = type === 'expense'
@@ -92,9 +109,9 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
             <div className="bg-gray-900 text-white w-full max-w-md p-8 rounded-lg shadow-lg">
                 <div className="flex justify-between items-center mb-4">
-                    <button className="text-white" onClick={onClose}>Close</button>
+                    <button className=" bg-red-500 px-4 py-2 rounded text-white" onClick={onClose}>Close</button>
                     <h2 className="text-2xl font-bold">Edit Spending</h2>
-                    <button className="text-white" onClick={handleUpdate}>Edit</button>
+                    <button className="bg-green-500 px-4 py-2 rounded text-white" onClick={handleUpdate}>Save</button>
                 </div>
                 {showMessage && (
                     <div className={`fixed top-4 right-4 px-[10rem] py-5 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white rounded-lg shadow-lg`}>
@@ -109,7 +126,7 @@ const EditModal = ({ spending, wallets, categories, onClose, onUpdate }) => {
                         type="number"
                         className="bg-gray-700 text-white text-center w-full py-2 rounded-lg mt-2"
                         value={amount}
-                        onChange={(e) => setAmount(parseFloat(e.target.value))}
+                        onChange={handleAmountChange}
                         placeholder="Amount $"
                     />
                 </div>

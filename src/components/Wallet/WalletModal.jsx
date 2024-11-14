@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const WalletModal = ({ isOpen, onClose, onWalletCreated }) => {
     const [walletName, setWalletName] = useState('');
-    const [walletBalance, setWalletBalance] = useState(0);
+    const [walletBalance, setWalletBalance] = useState("");
     const [currency, setCurrency] = useState('VND');
     const [showMessage, setShowMessage] = useState(false);
     const [message, setMessage] = useState('');
@@ -59,13 +59,26 @@ const WalletModal = ({ isOpen, onClose, onWalletCreated }) => {
             setShowMessage(true);
         }
     };
+    const handleBalanceChange = (e) => {
+        const value = e.target.value;
+        if (!isNaN(value) && parseFloat(value) >= 0) {
+            setWalletBalance(value);
+        } else {
+            setMessage("Please enter a positive number.");
+            setIsError(true);
+            setShowMessage(true);
+            setTimeout(() => {
+                setShowMessage(false);
+            }, 2000);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
             <div className='bg-gray-900 text-white w-full max-w-md p-8 rounded-lg shadow-lg'>
                 <div className="flex justify-between items-center mb-4">
                     <button className="bg-green-500 px-4 py-2 rounded text-white" onClick={onClose}>Close</button>
-                    <h2 className="text-2xl font-bold">Create Wallet</h2>
+                    <h2 className="text-2xl font-bold sm:text-[20px] text-[20px]">Create Wallet</h2>
                     <button className="bg-red-500 px-4 py-2 rounded text-white" form="walletForm">Save</button>
                 </div>
 
@@ -95,11 +108,11 @@ const WalletModal = ({ isOpen, onClose, onWalletCreated }) => {
                             Wallet Balance
                         </label>
                         <input
-                            type="number"
+                            type="text"
                             id="walletBalance"
                             className="w-full p-2 border border-gray-500 rounded-lg bg-gray-700 text-white"
                             value={walletBalance}
-                            onChange={(e) => setWalletBalance(e.target.value)}
+                            onChange={handleBalanceChange}
                             required
                         />
                     </div>

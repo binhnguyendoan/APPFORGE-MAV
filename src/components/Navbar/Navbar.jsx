@@ -28,8 +28,8 @@ const Navbar = () => {
 
   return (
     <div className="flex justify-between bg-[#54ccb5] p-5 sm:p-11">
-      <div className="name" onClick={toggleLogout}>
-        <h2 className=" text-white text-[16px] sm:text-[20px]">
+      <div className="name " onClick={toggleLogout} >
+        <h2 className=" text-white text-[16px] sm:text-[20px] hover:cursor-pointer">
           {userName} <FontAwesomeIcon icon={faBars} className=" ml-2" />
         </h2>
         {showLogout && (
@@ -41,11 +41,11 @@ const Navbar = () => {
           </div>
         )}
       </div>
-      <div className="wallet">
+      {/* <div className="wallet">
         <h2 className="text-white text-[16px] sm:text-[20px]">
           Wallet <FontAwesomeIcon icon={faChevronDown} />
         </h2>
-      </div>
+      </div> */}
     </div>
   );
 };

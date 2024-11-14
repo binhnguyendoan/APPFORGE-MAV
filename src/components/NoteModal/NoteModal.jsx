@@ -17,6 +17,22 @@ const NoteModal = ({ isOpen, onClose }) => {
     const [isError, setIsError] = useState(false);
     const userId = localStorage.getItem('user_id');
 
+    const handleAmountChange = (e) => {
+        const value = e.target.value;
+
+        if (!isNaN(value) && parseFloat(value) >= 0) {
+            setAmount(value);
+        } else {
+            setMessage('Please enter a positive number.');
+            setIsError(true);
+            setShowMessage(true);
+            setTimeout(() => {
+                setShowMessage(false);
+            }, 2000);
+        }
+    };
+
+
     useEffect(() => {
         const fetchWallets = async () => {
             try {
@@ -28,18 +44,18 @@ const NoteModal = ({ isOpen, onClose }) => {
                     },
                     body: JSON.stringify({
                         query: `
-                            {
-                                wallets {
-                                    id,
-                                    user_id,
-                                    name,
-                                    balance,
-                                    currency,
-                                    created_at,
-                                    updated_at
+                                {
+                                    wallets {
+                                        id,
+                                        user_id,
+                                        name,
+                                        balance,
+                                        currency,
+                                        created_at,
+                                        updated_at
+                                    }
                                 }
-                            }
-                        `,
+                            `,
                     }),
                 });
                 const result = await response.json();
@@ -65,31 +81,31 @@ const NoteModal = ({ isOpen, onClose }) => {
             return;
         }
         const noteMutation = `
-            mutation {
-                ${noteType === 'expense' ? 'createExpense' : 'createIncome'}(
-                    category_id: ${categoryId},
-                    wallet_id: ${selectedWallet.id},
-                    amount: ${parseFloat(amount)},
-                    date: "${date}",
-                    description: "${description}"
-                ) {
-                    id
-                    user_id
-                    amount
-                    date
-                    description
-                    category {
+                mutation {
+                    ${noteType === 'expense' ? 'createExpense' : 'createIncome'}(
+                        category_id: ${categoryId},
+                        wallet_id: ${selectedWallet.id},
+                        amount: ${parseFloat(amount)},
+                        date: "${date}",
+                        description: "${description}"
+                    ) {
                         id
-                        name
-                    }
-                    wallet {
-                        id
-                        name
-                        balance
+                        user_id
+                        amount
+                        date
+                        description
+                        category {
+                            id
+                            name
+                        }
+                        wallet {
+                            id
+                            name
+                            balance
+                        }
                     }
                 }
-            }
-        `;
+            `;
 
         try {
 
@@ -122,17 +138,17 @@ const NoteModal = ({ isOpen, onClose }) => {
 
 
             const updateMutation = `
-                mutation {
-                    updateWallet(
-                        id: "${selectedWallet.id}",
-                        balance: ${updatedBalance},
-                        currency: "${selectedWallet.currency}"
-                    ) {
-                        id
-                        balance
+                    mutation {
+                        updateWallet(
+                            id: "${selectedWallet.id}",
+                            balance: ${updatedBalance},
+                            currency: "${selectedWallet.currency}"
+                        ) {
+                            id
+                            balance
+                        }
                     }
-                }
-            `;
+                `;
 
             const updateResponse = await fetch('https://appforge.mavsolutions.vn/graphql', {
                 method: 'POST',
@@ -211,7 +227,7 @@ const NoteModal = ({ isOpen, onClose }) => {
                         className="bg-gray-700 text-white text-center w-full py-2 rounded-lg mt-2"
                         placeholder="0 $"
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={handleAmountChange}
                     />
                 </div>
 
